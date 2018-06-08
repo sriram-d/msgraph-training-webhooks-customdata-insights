@@ -1,20 +1,18 @@
-# Microsoft Graph Capabilities – 400 Level
+# Microsoft Graph Capabilities
 
 In this lab, you will walk through capabilities of the Microsoft Graph to build applications to understand the capabilities of Microsoft Graph. 
 
 ## Table of Contents
 
-1. [Microsoft Graph delta queries](#deltaqueries)
-1. [Microsoft Graph webhooks](#webhooks)
-1. [Adding custom data to resources in Microsoft Graph](#customdata)
-1. [Developing Insights with Microsoft Graph](#insights)
-1. [Creating batch requests with Microsoft Graph](#batch)
+1. [Microsoft Graph delta queries](#1._Microsoft_Graph_delta_queries)
+1. [Microsoft Graph webhooks](#2._Microsoft_Graph_webhooks)
+1. [Adding custom data to resources in Microsoft Graph](#3._Adding_custom_data_to_resources_in_Microsoft_Graph])
+1. [Developing Insights with Microsoft Graph](#4._Developing_Insights_with_Microsoft_Graph)
+1. [Creating batch requests with Microsoft Graph](#5._Creating_batch_requests_with_Microsoft_Graph)
 
 ## Prerequisites
 
 This lab uses Visual Studio 2017. It also requires an Office 365 subscription and a user with administrative privileges. This lab also requires a Microsoft Azure subscription. If you do not have an Azure subscription, get started by creating a [Free Azure Subscription](https://azure.microsoft.com/free).
-
-<a name="deltaqueries"></a>
 
 ## 1. Microsoft Graph delta queries
 
@@ -29,38 +27,39 @@ Visit the [Application Registration Portal](https://apps.dev.microsoft.com). **R
 - Add an **application** permission for the `User.ReadWrite.All` scope. 
 - Make sure to **Save** all changes
 
-![](Images/01.png)
+![Screen shot of permissions](Images/01.png)
 
 The application requests an application permission with the User.ReadWrite.All scope. This permission requires administrative consent. **Copy** the following URL and **replace** the `{clientId}` placeholder with your application's client ID from the application registration portal.
 
-````
+````html
 https://login.microsoftonline.com/common/adminconsent?client_id={clientId}&redirect_uri=http://localhost
 ````
 
 **Paste** the resulting URL into a browser. You are prompted to sign in. You must sign in as an administrative user.
 
-![](Images/02.png)
+![Screen shot of sign in](Images/02.png)
 
 After signing in, you are prompted to consent to permission requests to read and write all users' full profiles and to sign in and read the current user's profile. Click **Accept**.
 
-![](Images/03.png)
+![Screen shot of user consent](Images/03.png)
 
 > **Note:** There is approximately a 20 minute data replication delay between the time when an application is granted admin consent and when the data can successfully synchronize. For more information, see: https://github.com/Azure-Samples/active-directory-dotnet-daemon-v2/issues/1
 
 You will receive an error indicating a bad request. This is expected. You did not create a web application to listen for HTTP requests on localhost, Azure AD is telling you that it cannot redirect to the requested URL. Building a web application for admin consent is out of scope for this lab. However, the URL in the browser shows that Azure AD is telling you that admin consent has been granted via the "admin_consent=True" in the URL bar.
 
-![](Images/04.png)
+![Screen shot of page not found](Images/04.png)
 
 ### Create a new console application
 In Visual Studio 2017, create a new console application named **UsersDeltaQuery**.
 
-![](Images/05.png)
+![Screen shot of new project](Images/05.png)
 
 **Right-click** the project and choose **Manage NuGet Packages**. 
 
-Click the **Browse** tab in the NuGet Package Manager window. Ensure the **Include prerelease** checkbox is checked.
+Click the **Browse** tab in the NuGet Package Manager window. Ensure the **Include pre-release** checkbox is checked.
 
 **Search** for and install the following NuGet packages:
+
 - `Microsoft.Graph` 
 - `Microsoft.Identity.Client`
 
@@ -87,7 +86,7 @@ using System.Threading.Tasks;
 namespace UsersDeltaQuery
 {
     class Program
-    {                
+    {
         static void Main(string[] args)
         {
             RunAsync(args).GetAwaiter().GetResult();
@@ -101,7 +100,7 @@ namespace UsersDeltaQuery
             var clientId = ConfigurationManager.AppSettings["clientId"];
             var tenantId = ConfigurationManager.AppSettings["tenantId"];
             var authorityFormat = ConfigurationManager.AppSettings["authorityFormat"];
-            
+
             ConfidentialClientApplication daemonClient = new ConfidentialClientApplication(
                 ConfigurationManager.AppSettings["clientId"],
                 String.Format(authorityFormat, tenantId),
@@ -126,24 +125,23 @@ namespace UsersDeltaQuery
             var userPage = await graphClient.Users
                 .Delta()
                 .Request()
-                .Select("displayName,userPrincipalName")                     
+                .Select("displayName,userPrincipalName")
                 .GetAsync();
 
             //Display users and get the delta link
             var deltaLink = await DisplayChangedUsersAndGetDeltaLink(userPage);
 
-            
             Console.WriteLine("=== Adding user");
 
             //Create a new user
             var u = new User()
             {
-                DisplayName = "UsersDeltaQuery Demo User",                
+                DisplayName = "UsersDeltaQuery Demo User",
                 GivenName = "UsersDeltaQueryDemo",
                  Surname = "User",
                  MailNickname = "UsersDeltaQueryDemoUser",
                  UserPrincipalName = Guid.NewGuid().ToString() + "@" + tenantId,
-                PasswordProfile = new PasswordProfile() { ForceChangePasswordNextSignIn = true, Password = "D3m0p@55w0rd!" },                
+                PasswordProfile = new PasswordProfile() { ForceChangePasswordNextSignIn = true, Password = "D3m0p@55w0rd!" },
                 AccountEnabled = true
             };
             var newUser = await graphClient.Users.Request().AddAsync(u);
@@ -164,7 +162,7 @@ namespace UsersDeltaQuery
                 //Query using the delta link to see the new user
                 userPage.InitializeNextPageRequest(graphClient, deltaLink);
                 userPage = await userPage.NextPageRequest.GetAsync();
-                newDeltaLink = await DisplayChangedUsersAndGetDeltaLink(userPage);                
+                newDeltaLink = await DisplayChangedUsersAndGetDeltaLink(userPage);
             }
 
             Console.WriteLine("=== Deleting user");
@@ -203,30 +201,28 @@ namespace UsersDeltaQuery
         }
     }
 }
-    
+
 ````
 
 ### Run the application
 
 Now that the application is written and configured, run the application to test it and observe its behavior.
 
-Your application will make a delta query request to the Microsoft Graph for users. The first query will return all users because you do not yet have a deltaLink to query. 
+Your application will make a delta query request to the Microsoft Graph for users. The first query will return all users because you do not yet have a deltaLink to query.
 
-![](Images/06.png)
+![Screen shot of all users](Images/06.png)
 
-In order to force a change, you will add a new user using the Microsoft Graph API. Because these are asyncronous methods the code execution will pause waiting for you to press a key to continue. This allows you to verify that the newly created `UsersDeltaQuery Demo User` user has been added to your tenant before executing the delta query.
+In order to force a change, you will add a new user using the Microsoft Graph API. Because these are asynchronous methods the code execution will pause waiting for you to press a key to continue. This allows you to verify that the newly created `UsersDeltaQuery Demo User` user has been added to your tenant before executing the delta query.
 
-You can uncomment the lines in the method that displays the user data to also show the nextLink, skipToken, and deltaLink values.
+You can un-comment the lines in the method that displays the user data to also show the nextLink, skipToken, and deltaLink values.
 
-![](Images/07.png)
+![Screen shot of links for next batch and delta](Images/07.png)
 
 Another delta query request is made to the Microsoft Graph against the Users resource, this time using the deltaQuery. Only the newly added user is returned.
 
-![](Images/08.png)
+![Screen shot of delta result and deleting user](Images/08.png)
 
-Finally, the newly created user is deleted. 
-
-<a name="webhooks"></a>
+Finally, the newly created user is deleted.
 
 ## 2. Microsoft Graph webhooks
 
@@ -416,7 +412,7 @@ namespace WebApp.Models
             TenantId = parameters.Item3;
         }
 
-        // This sample temporarily stores the current subscription ID, client state, user object ID, and tenant ID. 
+        // This sample temporarily stores the current subscription ID, client state, user object ID, and tenant ID.
         // This info is required so the NotificationController can retrieve an access token from the cache and validate the subscription.
         // Production apps typically use some method of persistent storage.
         public static void SaveSubscriptionInfo(string subscriptionId, string clientState, string userId, string tenantId)
@@ -494,12 +490,13 @@ namespace WebApp.Controllers
             //Store the notifications in session state. A production
             //application would likely queue for additional processing.
             //Store the notifications in application state. A production
-            //application would likely queue for additional processing.                                                                             
+            //application would likely queue for additional processing.
+
             var notificationArray = (ConcurrentBag<Notification>)HttpContext.Application["notifications"];
             if (notificationArray == null)
             {
                 notificationArray = new ConcurrentBag<Notification>();
-            }            
+            }
             HttpContext.Application["notifications"] = notificationArray;
             return View(notificationArray);
         }
@@ -521,7 +518,7 @@ namespace WebApp.Controllers
             else
             {
                 try
-                {                    
+                {
                     using (var inputStream = new System.IO.StreamReader(Request.InputStream))
                     {
                         JObject jsonObject = JObject.Parse(inputStream.ReadToEnd());
@@ -544,14 +541,18 @@ namespace WebApp.Controllers
                                     if (current.ClientState == subscription.ClientState)
                                     {
                                         //Store the notifications in application state. A production
-                                        //application would likely queue for additional processing.                                                                             
-                                        var notificationArray = (ConcurrentBag<Notification>)HttpContext.Application["notifications"];                                        
+                                        //application would likely queue for additional processing.
+
+                                        var notificationArray = (ConcurrentBag<Notification>)HttpContext.Application["notifications"];
+
                                         if(notificationArray == null)
                                         {
-                                            notificationArray = new ConcurrentBag<Notification>();                                            
+                                            notificationArray = new ConcurrentBag<Notification>();
+
                                         }
-                                        notificationArray.Add(current);                                        
-                                        HttpContext.Application["notifications"] = notificationArray;                                        
+                                        notificationArray.Add(current);
+
+                                        HttpContext.Application["notifications"] = notificationArray;
                                     }
                                 }
                             }
@@ -607,7 +608,7 @@ namespace WebApp.Controllers
             return View();
         }
 
-        [Authorize]        
+        [Authorize]
         public async Task<ActionResult> CreateSubscription()
         {
             string subscriptionsEndpoint = "https://graph.microsoft.com/v1.0/subscriptions/";
@@ -627,11 +628,10 @@ namespace WebApp.Controllers
                 //ExpirationDateTime = DateTime.UtcNow + new TimeSpan(0, 0, 4230, 0) // current maximum timespan for messages
                 ExpirationDateTime = DateTime.UtcNow + new TimeSpan(0, 0, 15, 0) // shorter duration useful for testing
             };
-            
+
             string contentString = JsonConvert.SerializeObject(subscription,
                 new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
             request.Content = new StringContent(contentString, System.Text.Encoding.UTF8, "application/json");
-            
 
             // try to get token silently
             string signedInUserID = ClaimsPrincipal.Current.FindFirst(ClaimTypes.NameIdentifier).Value;
@@ -742,6 +742,7 @@ namespace WebApp.Controllers
     }
 }
 ````
+
 ### Update the views
 
 We are adding new capabilities to an existing application. Update the `Views/Shared/_Layout.cshtml` file to provide navigation links to your new controllers.
@@ -831,7 +832,7 @@ The `Notification` controller was created but a view was not created for it yet.
         </th>
         <th>
             @Html.DisplayNameFor(model => model.SubscriptionId)
-        </th>        
+        </th>
     </tr>
 
 
@@ -857,9 +858,7 @@ The `Notification` controller was created but a view was not created for it yet.
 }
 
 </table>
-
     <br />
-
 }
 
 <div>
@@ -873,8 +872,6 @@ The `Notification` controller was created but a view was not created for it yet.
 The `Subscription` controller was created but does not yet have a view associated with it. **Right-click** the `Views/Subscription` folder, choose **Add / View**, and name the new view `Index`, leaving all other values as their default.  **Replace** the contents of `Index.cshtml` with the following:
 
 ````html
-<!--  Copyright (c) Microsoft. All rights reserved. Licensed under the MIT license.
-        See LICENSE in the source repository root for complete license information. -->
 @{
     ViewBag.Title = "Index";
     bool isAuthenticated = Context.User.Identity.IsAuthenticated;
@@ -912,8 +909,6 @@ The `Subscription` controller was created but does not yet have a view associate
 `SubscriptionController` also needs a view to display the properties of a newly created subscription. **Right-click** the `Views/Subscription` folder, choose **Add / View**, and name the new view `Subscription`, leaving all other values as their default.  **Replace** the contents of `Subscription.cshtml` with the following:
 
 ````html
-The <!--  Copyright (c) Microsoft. All rights reserved. Licensed under the MIT license.
-        See LICENSE in the source repository root for complete license information. -->
 @model WebApp.Models.SubscriptionViewModel
 @{
     ViewBag.Title = "Subscription";
@@ -985,15 +980,16 @@ Azure Web Apps makes it easy to debug a web application in the cloud as if it we
 
 In the resulting browser window, click the **Sign in with Microsoft** link in the top right of the window. When prompted, grant consent to the requested permissions.
 
-Once logged in, the navigation menu will reflect the changes made to the application. 
-![](Images/09.png)
+Once logged in, the navigation menu will reflect the changes made to the application.
+
+![Output from updated menu](Images/09.png)
 
 **Click** the **Subscribe** navigation menu item. This page will initiate a new subscription to your mailbox, and will show the subscription properties when complete.
-![](Images/10.png)
+![Output from new subscription](Images/10.png)
 
-The subscription was created for mail messages, any time a new message is created in your inbox in the next 15 minutes (the lifetime of the subscription request) a notification is received. To see this, **click** the **Send mail** navigation menu item.  **Enter** your email address, a subject, and body, and click **Send**. 
+The subscription was created for mail messages, any time a new message is created in your inbox in the next 15 minutes (the lifetime of the subscription request) a notification is received. To see this, **click** the **Send mail** navigation menu item.  **Enter** your email address, a subject, and body, and click **Send**.
 
-![](Images/11.png)
+![Output from new notification](Images/11.png)
 
 After a short time, your web application will receive a notification from Microsoft. To check for the notification, **click** the **Notifications** navigation menu item. Refresh the page until the new notification is shown.
 
@@ -1001,11 +997,9 @@ After a short time, your web application will receive a notification from Micros
 
 Your application could provide additional capabilities such as querying Microsoft Graph for additional data when a notification is received. This application allows multiple users to add subscriptions, but all users can see all notifications. Your application may require you to implement a per-user information store or filter data to only the notifications relevant to the current user. 
 
-<a name="customdata"></a>
-
 ## 3. Adding custom data to Microsoft Graph resources
 
-This lab will walk you through working with custom data for resources using Microsoft Graph. 
+This lab will walk you through working with custom data for resources using Microsoft Graph.
 
 ### Pre-requisistes
 
@@ -1015,11 +1009,11 @@ This lab requires an Office 365 administrative user.
 
 Visit the [Application Registration Portal](https://apps.dev.microsoft.com) and register a new application.  Make sure you are using a Office 365 Work and School account. Add a **Native** application platform. Add **delegated** permissions for **Directory.AccessAsUser.All** and **Group.ReadWrite.All**. Click **Save**.
 
-![](Images/13.png)
+![Screen shot of application permissions](Images/13.png)
 
 ### Create the application
 
-In Visual Studio 2017, **create** a new project using the **Console App (.NET Framework)** project template. **Right-click** the project node and choose **Manage NuGet packages**. **Click** the Browse tab, ensure the **Include pre-release** checkbox is checked, and search for **Microsoft.Identity.Client**. Click **Install**. **Click** the Browse tab and search for **Newtonsoft.Json**. Click **Install**. 
+In Visual Studio 2017, **create** a new project using the **Console App (.NET Framework)** project template. **Right-click** the project node and choose **Manage NuGet packages**. **Click** the Browse tab, ensure the **Include pre-release** checkbox is checked, and search for **Microsoft.Identity.Client**. Click **Install**. **Click** the Browse tab and search for **Newtonsoft.Json**. Click **Install**.
 
 **Right-click** the References node in the project and choose **Add Reference**. Add a reference for **System.Configuration**.
 
@@ -1031,7 +1025,7 @@ In Visual Studio 2017, **create** a new project using the **Console App (.NET Fr
   </appSettings>
 ````
 
-**Update** the `ida:clientId` setting with the Application ID of the application you previously registered. 
+**Update** the `ida:clientId` setting with the Application ID of the application you previously registered.
 
 **Replace** the contents of `Program.cs` with the following:
 
@@ -1100,11 +1094,10 @@ namespace CustomData
                 await UpdateRoamingProfileInformationAsync(client);
                 await DeleteRoamingProfileInformationAsync(client);
             }
-            
         }
         async Task AddRoamingProfileInformationAsync(HttpClient client)
         {
-            var request = new HttpRequestMessage(HttpMethod.Post, "me/extensions");            
+            var request = new HttpRequestMessage(HttpMethod.Post, "me/extensions");
             request.Content = new StringContent("{'@odata.type':'microsoft.graph.openTypeExtension','extensionName':'com.contoso.roamingSettings','theme':'dark','color':'purple','lang':'Japanese'}", Encoding.UTF8, "application/json");
             var response = await client.SendAsync(request);
             response.WriteCodeAndReasonToConsole();
@@ -1220,7 +1213,7 @@ namespace CustomData
 
         async Task ViewAvailableExtensionsAsync(HttpClient client)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, "schemaextensions");            
+            var request = new HttpRequestMessage(HttpMethod.Get, "schemaextensions");
 
             var response = await client.SendAsync(request);
             response.WriteCodeAndReasonToConsole();
@@ -1264,14 +1257,14 @@ namespace CustomData
             request.Content = new StringContent("{'" + schemaId + "':{'courseId':'123','courseName':'New Managers','courseType':'Online'}}", Encoding.UTF8, "application/json");
 
             var response = await client.SendAsync(request);
-            response.WriteCodeAndReasonToConsole();            
+            response.WriteCodeAndReasonToConsole();
             Console.WriteLine();
         }
 
         async Task GetGroupAndExtensionDataAsync(HttpClient client, string schemaId)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, "groups?$filter=" + schemaId + "/courseId eq '123'&$select=displayName,id,description," + schemaId);
-            
+
             var response = await client.SendAsync(request);
             response.WriteCodeAndReasonToConsole();
 
@@ -1286,17 +1279,17 @@ namespace CustomData
         async Task DeleteGroupAndExtensionAsync(HttpClient client, string schemaId, string groupId)
         {
             var request = new HttpRequestMessage(HttpMethod.Delete, "schemaextensions/" + schemaId);
-            
+
             var response = await client.SendAsync(request);
             response.WriteCodeAndReasonToConsole();
-            
+
             Console.WriteLine();
 
             request = new HttpRequestMessage(HttpMethod.Delete, "groups/" + groupId);
 
             response = await client.SendAsync(request);
             response.WriteCodeAndReasonToConsole();
-            
+
             Console.WriteLine();
         }
     }
@@ -1340,7 +1333,6 @@ namespace CustomData
             Console.ForegroundColor = defaultFGColor;
             Console.WriteLine();
         }
-        
     }
 }
 ````
@@ -1353,17 +1345,15 @@ You are prompted to log in and grant consent to read and write the current user'
 
 The application is making REST calls to the Microsoft Graph to demonstrate the capabilities of using open extensions. The console output will show green highlighted text for successful calls, and red highlighted text if calls do not succeed.
 
-![](Images/14.png)
+![Output from open extensions](Images/14.png)
 
 You are prompted to log in a second time. This is on purpose, to demonstrate the difference in permissions that these two approaches require. Notice that you are again prompted for consent, this time to read and write groups and to access the directory as the user.  Grant permissions, and the application will continue.
 
 The application is now making REST calls to the Microsoft Graph to demonstrate the capabilities of using schema extensions. Just as before, the console output will show green highlighted text for successful calls, and red highlighted text if calls do not succeed.
 
-![](Images/15.png)
+![Output from schema extension](Images/15.png)
 
 > Note that there is a `Thread.Sleep` call between each operation. This is required to avoid a race condition with resources as they are being created. 
-
-<a name="insights"></a>
 
 ## 4. Developing insights with Microsoft Graph
 
@@ -1388,24 +1378,23 @@ git clone https://github.com/Azure-Samples/active-directory-dotnet-webapp-openid
 
 **Open** the project with Visual Studio 2017. 
 
-**Edit** the `web.config` file with your app's coordinates. 
-- Find the appSettings key `ida:ClientId` and provide the Application ID from your app registration. 
+**Edit** the `web.config` file with your app's coordinates.
+
+- Find the appSettings key `ida:ClientId` and provide the Application ID from your app registration.
 - Find the appSettings key `ida:ClientSecret` and provide the value from the secret generated in the previous step.
 
 The Insights resource requires the Sites.Read.All delegated permission. **Edit** the `App_Start/Startup.Auth.cs` file and edit the scope parameter to include the `Sites.Read.All` permission scope in the space-delimited list.
 
-````csharp
+```csharp
 Scope = "openid email profile offline_access Mail.Read Sites.Read.All",
-````
+```
 
 The application will de-serialize JSON data returned from Microsoft Graph into strongly-typed classes.  **Right-click** the `Models` folder and add a new class `Insights.cs`. **Replace** the contents of `Insights.cs` with the following:
 
-````csharp
+```csharp
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-
-
 
 public class ResourceVisualization
 {
@@ -1580,11 +1569,11 @@ public class LastUsed
     [JsonProperty("lastModifiedDateTime")]
     public DateTime lastModifiedDateTime { get; set; }
 }
-````
+```
 
 **Right-click** the `Controllers` folder, choose **Add / Controller**, choose the **MVC 5 Controller - Empty** project item template, and name the new controller `InsightsController`. **Replace** the contents of `InsightsController.cs` with the following:
 
-````csharp
+```csharp
 using Microsoft.Identity.Client;
 using Newtonsoft.Json;
 using System;
@@ -1607,11 +1596,10 @@ namespace WebApp.Controllers
         private static string appKey = ConfigurationManager.AppSettings["ida:ClientSecret"];
         private static string redirectUri = ConfigurationManager.AppSettings["ida:RedirectUri"];
 
-        // GET: Insights        
+        // GET: Insights
         public async Task<ActionResult> Index()
         {
             return View();
-            
         }
 
         [Authorize]
@@ -1755,7 +1743,7 @@ namespace WebApp.Controllers
 
     }
 }
-````
+```
 
 Each controller method returns a different model to use with its view. **Right-click** the `Views / Insights` folder and choose **Add / View**. Add four empty views:
 
@@ -1764,9 +1752,9 @@ Each controller method returns a different model to use with its view. **Right-c
 - `Trending.cshtml`
 - `Used.cshtml`
 
-**Replace** the contents of ``Index.cshtml` with the following:
+**Replace** the contents of `Index.cshtml` with the following:
 
-````html
+```html
 @{
     ViewBag.Title = "Index";
 }
@@ -1778,11 +1766,11 @@ Each controller method returns a different model to use with its view. **Right-c
 @Html.ActionLink("View shared", "Shared")
 
 @Html.ActionLink("View used", "Used")
-````
+```
 
 **Replace** the contents of `Shared.cshtml` with the following:
 
-````html
+```html
 @model SharedInsights
 
 @{
@@ -1869,11 +1857,11 @@ Each controller method returns a different model to use with its view. **Right-c
 <p>
     @Html.ActionLink("Back to List", "Index")
 </p>
-````
+```
 
-**Replace** the contents of ``Trending.cshtml` with the following:
+**Replace** the contents of `Trending.cshtml` with the following:
 
-````html
+```html
 @model TrendingInsights
 
 @{
@@ -1918,12 +1906,11 @@ Each controller method returns a different model to use with its view. **Right-c
 <p>
     @Html.ActionLink("Back to List", "Index")
 </p>
+```
 
+**Replace** the contents of `Used.cshtml` with the following:
 
-````
-**Replace** the contents of ``Used.cshtml` with the following:
-
-````html
+```html
 @model UsedInsights
 
 @{
@@ -1964,39 +1951,36 @@ Each controller method returns a different model to use with its view. **Right-c
 }
     </dl>
 </div>
-<p>    
+<p>
     @Html.ActionLink("Back to List", "Index")
 </p>
+```
 
-
-````
 Each of these views uses two partial views, `_ResourceReference` and `_ResourceVisualization`. Partial views make it easy to encapsulate code that is common across multiple views. 
 
 **Right-click** the `Views / Shared` folder and choose **Add / View**. Name the new view `_ResourceReference`, change the template to **Details**, and change the model class to **ResourceReference**. Check the **Create as partial view** checkbox and click **Add**.
 
-![](Images/16.png)
+![Screen shot of properties for adding a resource view](Images/16.png)
 
 **Repeat** these steps to add a partial view for `_ResourceVisualization`. Name the new view `_ResourceVisualization`, change the template to **Details**, and change the model class to **ResourceVisualization**. Check the **Create as partial view** checkbox and click **Add**.
 
 Finally, update the top-level navigation for the web site. **Edit** the `Views / Shared / _Layout.cshtml` file and **add** a link to the new controller.
 
-````html
+```html
 <li>@Html.ActionLink("Read Mail", "ReadMail", "Home")</li>
 <li>@Html.ActionLink("Send Mail", "SendMail", "Home")</li>
 <li>@Html.ActionLink("Insights", "Index", "Insights")</li>
-````
+```
 
 ### Run the application
 
-Run the application, then click on the **Sign in with Microsoft** link. You are prompted to sign in and to grant the application the requested permisssions. After consenting, the page is displayed. Click the **Insights** link at the top of the page, then choose the **View Trending** link. The information is displayed.
+Run the application, then click on the **Sign in with Microsoft** link. You are prompted to sign in and to grant the application the requested permissions. After consenting, the page is displayed. Click the **Insights** link at the top of the page, then choose the **View Trending** link. The information is displayed.
 
-![](Images/17.png)
+![Output of resource visualization](Images/17.png)
 
 Notice that the image for the previewImage is not displaying. This is because you must first log into your SharePoint site to see data. Open a new tab in the browser and navigate to your SharePoint site. Now, go back to the page and refresh, you will see the images appear.
 
-![](Images/18.png)
-
-<a name="batch"></a>
+![Output of trending insights](Images/18.png)
 
 ## 5. Creating batch requests with Microsoft Graph
 
@@ -2010,27 +1994,27 @@ This lab requires an Office 365 user.
 
 Visit the [Application Registration Portal](https://apps.dev.microsoft.com) and register a new application. Add a **Native** application platform. Add **delegated** permissions for **Mail.Read**, **Calendars.Read**, **Contacts.Read**. Click **Save**.
 
-![](Images/19.png)
+![Permissions granted in application](Images/19.png)
 
 ### Create the application
 
-In Visual Studio 2017, **create** a new project using the **Console App (.NET Framework)** project template. **Right-click** the project node and choose **Manage NuGet packages**. **Click** the Browse tab, ensure the **Include pre-release** checkbox is checked, and search for **Microsoft.Identity.Client**. Click **Install**. **Click** the Browse tab and search for **Newtonsoft.Json**. Click **Install**. 
+In Visual Studio 2017, **create** a new project using the **Console App (.NET Framework)** project template. **Right-click** the project node and choose **Manage NuGet packages**. **Click** the Browse tab, ensure the **Include pre-release** checkbox is checked, and search for **Microsoft.Identity.Client**. Click **Install**. **Click** the Browse tab and search for **Newtonsoft.Json**. Click **Install**.
 
 **Right-click** the References node in the project and choose **Add Reference**. Add a reference for **System.Configuration**.
 
 **Update** the `app.config` file and add an `appSettings` section as a child of the `configuration` element with the following structure:
 
-````xml
+```xml
   <appSettings>
     <add key="ida:clientId" value=""/>
   </appSettings>
-````
+```
 
-**Update** the `ida:clientId` setting with the Application ID of the application you previously registered. 
+**Update** the `ida:clientId` setting with the Application ID of the application you previously registered.
 
 **Replace** the contents of `Program.cs` with the following:
 
-````csharp
+```csharp
 using System.Configuration;
 using System.Threading.Tasks;
 
@@ -2056,11 +2040,11 @@ namespace Batch
         }
     }
 }
-````
+```
 
 **Add** a new class named `BatchDemo.cs`.  **Replace** the contents with the following:
 
-````csharp
+```csharp
 using Microsoft.Identity.Client;
 using Newtonsoft.Json.Linq;
 using System;
@@ -2120,13 +2104,13 @@ namespace Batch
         }
     }
 }
-````
+```
 
 The `BatchDemo` class uses an extension method to write the HTTP status code and reason to console output.
 
 **Add** a new class named `HttpResponseMessageExtension.cs`.  **Replace** its contents with the following:
 
-````csharp
+```csharp
 using System;
 using System.Net.Http;
 
@@ -2161,16 +2145,16 @@ namespace CustomData
         }
     }
 }
-````
+```
 
 ### Run the application
 
-Run the application. 
+Run the application.
 
 You are prompted to log in and grant consent to read and write the current user's profile. After granting consent, the application will continue. 
 
-The application is making a REST calls to the Microsoft Graph that submits 3 requests in one call to retrieve the top Mail item, Calendar item, and Contact item from your account. 
+The application is making a REST calls to the Microsoft Graph that submits 3 requests in one call to retrieve the top Mail item, Calendar item, and Contact item from your account.
 
-The code adds the additional `dependsOn` property which causes the batch to execute those items in order, so the request with `id` '1' will go first because request '2' depends on it, etc. If the `dependsOn` property is removed all the requests will execute in parallel, but there is no guarantee that the responses will return in order, but will include the `id` you specified in the response.  For more information see [Combine multiple requests in one HTTP call using JSON batching](https://developer.microsoft.com/en-us/graph/docs/concepts/json_batching).
+The code adds the additional `dependsOn` property which causes the batch to execute those items in order, so the request with `id` '1' will go first because request '2' depends on it, etc. If the `dependsOn` property is removed all the requests will execute in parallel. There is no guarantee that the responses will return in order, but each response will include the `id` you specified. For more information see [Combine multiple requests in one HTTP call using JSON batching](https://developer.microsoft.com/en-us/graph/docs/concepts/json_batching).
 
-![](Images/20.png)
+![image of batch call console output](Images/20.png)
