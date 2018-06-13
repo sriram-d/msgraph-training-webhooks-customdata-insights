@@ -1,4 +1,4 @@
-# Microsoft Graph: Microsoft Graph Capabilities - 400 Level
+# Microsoft Graph: Microsoft Graph Capabilities
 
 This module walks through building applications using various capabilities of Microsoft Graph.
 
@@ -16,6 +16,10 @@ In this lab, you will walk through building different types of applications leve
 - [Developing Insights with Microsoft Graph](./Demos/04-insights)
 - [Creating batch requests with Microsoft Graph](./Demos/05-batch)
 
+## Watch the Module
+
+This module has been recorded and is available in the Office Development YouTube channel: [Microsoft Graph Capabilities](https://www.youtube.com/watch?v=_i1cpciR330)
+
 ## Contributors
 
 |        Roles         |                            Author(s)                             |
@@ -26,11 +30,14 @@ In this lab, you will walk through building different types of applications leve
 
 ## Version history
 
-| Version |      Date      |             Comments              |
-| ------- | -------------- | --------------------------------- |
-| 1.1     | March 14, 2018 | Code Review and minor corrections |
-| 1.0     |                | Initial release                   |
+| Version |      Date      |                   Comments                   |
+| ------- | -------------- | -------------------------------------------- |
+| 1.2     | May 25, 2018   | 2018Q4 content refresh & style guide updates |
+| 1.1     | March 14, 2018 | Code Review and minor corrections            |
+| 1.0     |                | Initial release                              |
 
 ## Disclaimer
 
 **THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.**
+
+<img src="https://telemetry.sharepointpnp.com/msgraph-training-webhooks-customdata-insights" />
