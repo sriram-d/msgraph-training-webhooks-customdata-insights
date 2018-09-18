@@ -22,11 +22,11 @@ This demo uses **Visual Studio 2017**. It also requires an **Microsoft Office 36
 
 1. The application requests an application permission with the `User.ReadWrite.All` scope. This permission requires administrative consent. Copy the following URL and replace the `{clientId}` placeholder with your application's client ID from the application registration portal.
 
-    ```
+    ```browser
     https://login.microsoftonline.com/common/adminconsent?client_id={clientId}&redirect_uri=http://localhost
     ```
 
-1. Paste the resulting URL into a browser. 
+1. Paste the resulting URL into a browser.
 
 1. Log in when prompted. You must sign in as an administrative user.
 
@@ -56,7 +56,7 @@ This demo uses **Visual Studio 2017**. It also requires an **Microsoft Office 36
     - `Microsoft.Graph`
     - `Microsoft.Identity.Client`
 
-1. Right-click the **References** node in the project and choose **Add Reference**. 
+1. Right-click the **References** node in the project and choose **Add Reference**.
 
 1. Add a reference for `System.Configuration`.
 

@@ -1,6 +1,6 @@
 # Microsoft Graph Capabilities
 
-In this lab, you will walk through capabilities of the Microsoft Graph to build applications to understand the capabilities of Microsoft Graph. 
+In this lab, you will walk through capabilities of the Microsoft Graph to build applications to understand the capabilities of Microsoft Graph.
 
 ## Table of Contents
 
@@ -18,13 +18,13 @@ This lab uses Visual Studio 2017. It also requires an Office 365 subscription an
 
 This lab will walk you through developing an application using delta queries with Microsoft Graph to request changes to resources.
 
-### Register and grant consent to the application
+### Register and grant consent to the Graph delta queries application
 
 Visit the [Application Registration Portal](https://apps.dev.microsoft.com). **Register** a new Converged application, and copy the generated application ID for later use.  **Configure** the application:
 
 - **Generate** a new application password secret. Copy it for later use.
 - Add a **Native** application platform. Copy the generated URL for later use.
-- Add an **application** permission for the `User.ReadWrite.All` scope. 
+- Add an **application** permission for the `User.ReadWrite.All` scope.
 - Make sure to **Save** all changes
 
 ![Screen shot of permissions](Images/01.png)
@@ -43,24 +43,25 @@ After signing in, you are prompted to consent to permission requests to read and
 
 ![Screen shot of user consent](Images/03.png)
 
-> **Note:** There is approximately a 20 minute data replication delay between the time when an application is granted admin consent and when the data can successfully synchronize. For more information, see: https://github.com/Azure-Samples/active-directory-dotnet-daemon-v2/issues/1
+> **Note:** There is approximately a 20 minute data replication delay between the time when an application is granted admin consent and when the data can successfully synchronize. For more information, see: <https://github.com/Azure-Samples/active-directory-dotnet-daemon-v2/issues/1>
 
 You will receive an error indicating a bad request. This is expected. You did not create a web application to listen for HTTP requests on localhost, Azure AD is telling you that it cannot redirect to the requested URL. Building a web application for admin consent is out of scope for this lab. However, the URL in the browser shows that Azure AD is telling you that admin consent has been granted via the "admin_consent=True" in the URL bar.
 
 ![Screen shot of page not found](Images/04.png)
 
 ### Create a new console application
+
 In Visual Studio 2017, create a new console application named **UsersDeltaQuery**.
 
 ![Screen shot of new project](Images/05.png)
 
-**Right-click** the project and choose **Manage NuGet Packages**. 
+**Right-click** the project and choose **Manage NuGet Packages**.
 
 Click the **Browse** tab in the NuGet Package Manager window. Ensure the **Include pre-release** checkbox is checked.
 
 **Search** for and install the following NuGet packages:
 
-- `Microsoft.Graph` 
+- `Microsoft.Graph`
 - `Microsoft.Identity.Client`
 
 **Right-click** the References node in the project and choose **Add Reference**. **Add** a reference for `System.Configuration`.
@@ -106,7 +107,7 @@ namespace UsersDeltaQuery
                 String.Format(authorityFormat, tenantId),
                 ConfigurationManager.AppSettings["replyUri"],
                 new ClientCredential(ConfigurationManager.AppSettings["clientSecret"]),
-                null, 
+                null,
                 new TokenCache());
 
 
@@ -204,7 +205,7 @@ namespace UsersDeltaQuery
 
 ````
 
-### Run the application
+### Run the Microsoft Graph delta queries application
 
 Now that the application is written and configured, run the application to test it and observe its behavior.
 
@@ -234,13 +235,13 @@ Webhooks in Microsoft Graph require a publicly accessible endpoint such as a Mic
 
 Once the web app is created, copy the URL for later use.
 
-### Register the application
+### Register the Graph delta queries application
 
-Visit the [Application Registration Portal](https://apps.dev.microsoft.com/). **Register** a new converged application, and copy the generated application ID for later use.  **Configure** the application: 
+Visit the [Application Registration Portal](https://apps.dev.microsoft.com/). **Register** a new converged application, and copy the generated application ID for later use.  **Configure** the application:
 
 - Add a new secret by clicking the **Generate new password** button and copy the secret to use later as the Client Secret.
 - Click the **Add Platform** button. A popup is presented, choose **Web**.
-- Add a Redirect URL to use while debugging locally (the default setting for the Visual Studio project is `https://localhost:44326/`, if you use something else you need to change this value for your app registration). 
+- Add a Redirect URL to use while debugging locally (the default setting for the Visual Studio project is `https://localhost:44326/`, if you use something else you need to change this value for your app registration).
 - Add a Redirect URL to use with your Azure Web App (ex: `https://YOURWEBAPP.azurewebsites.net/`).
 - Click **Save** to save all changes.
 
@@ -252,12 +253,12 @@ The application will use OpenId Connect with the v2.0 endpoint as a starting poi
 git clone https://github.com/Azure-Samples/active-directory-dotnet-webapp-openidconnect-v2.git
 ````
 
-**Edit** the `web.config` file with your app's coordinates. 
+**Edit** the `web.config` file with your app's coordinates.
 
-- Find the appSettings key `ida:ClientId` and provide the Application ID from your app registration. 
+- Find the appSettings key `ida:ClientId` and provide the Application ID from your app registration.
 - Find the appSettings key `ida:ClientSecret` and provide the value from the secret generated in the previous step.
 - **Replace** the `ida:RedirectUrl` with the same value you provided in the application registration's Redirect URL for your Azure Web App (for example, `https://YOURWEBAPP.azurewebsites.net/`).
-- **Add** a new appSettings key named `ida:NotificationUrl`, replacing YOURWEBSITE with the name of your newly created Azure Web App:
+- **Add** a new appSettings key named `ida:NotificationUrl`, replacing `YOURWEBSITE` with the name of your newly created Azure Web App:
 
 ````xml
 <add key="ida:NotificationUrl" value="https://YOURWEBSITE.azurewebsites.net/notification/listen" />
@@ -362,7 +363,7 @@ namespace WebApp.Models
         [JsonProperty(PropertyName = "changeType")]
         public string ChangeType { get; set; }
 
-        // The string that Microsoft Graph should send with each notification. Maximum length is 255 characters. 
+        // The string that Microsoft Graph should send with each notification. Maximum length is 255 characters.
         // To verify that the notification is from Microsoft Graph, compare the value received with the notification to the value you sent with the subscription request.
         [JsonProperty(PropertyName = "clientState")]
         public string ClientState { get; set; }
@@ -526,13 +527,13 @@ namespace WebApp.Controllers
                         {
 
                             // Notifications are sent in a 'value' array. The array might contain multiple notifications for events that are
-                            // registered for the same notification endpoint, and that occur within a short timespan.
+                            // registered for the same notification endpoint, and that occur within a short time span.
                             JArray value = JArray.Parse(jsonObject["value"].ToString());
                             foreach (var notification in value)
                             {
                                 Notification current = JsonConvert.DeserializeObject<Notification>(notification.ToString());
 
-                                // Check client state to verify the message is from Microsoft Graph. 
+                                // Check client state to verify the message is from Microsoft Graph.
                                 SubscriptionStore subscription = SubscriptionStore.GetSubscriptionInfo(current.SubscriptionId);
 
                                 // This sample only works with subscriptions that are still cached.
@@ -625,7 +626,7 @@ namespace WebApp.Controllers
                 ChangeType = "created",
                 NotificationUrl = ConfigurationManager.AppSettings["ida:NotificationUrl"],
                 ClientState = Guid.NewGuid().ToString(),
-                //ExpirationDateTime = DateTime.UtcNow + new TimeSpan(0, 0, 4230, 0) // current maximum timespan for messages
+                //ExpirationDateTime = DateTime.UtcNow + new TimeSpan(0, 0, 4230, 0) // current maximum time span for messages
                 ExpirationDateTime = DateTime.UtcNow + new TimeSpan(0, 0, 15, 0) // shorter duration useful for testing
             };
 
@@ -656,7 +657,7 @@ namespace WebApp.Controllers
                             Subscription = JsonConvert.DeserializeObject<Subscription>(stringResult)
                         };
 
-                        // This sample temporarily stores the current subscription ID, client state, user object ID, and tenant ID. 
+                        // This sample temporarily stores the current subscription ID, client state, user object ID, and tenant ID.
                         // This info is required so the NotificationController, which is not authenticated, can retrieve an access token from the cache and validate the subscription.
                         // Production apps typically use some method of persistent storage.
                         SubscriptionStore.SaveSubscriptionInfo(viewModel.Subscription.Id,
@@ -697,10 +698,10 @@ namespace WebApp.Controllers
 
             // Build the request.
             HttpClient client = new HttpClient();
-            
+
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Delete, subscriptionsEndpoint + subscriptionId);
-            
+
             // try to get token silently
             string signedInUserID = ClaimsPrincipal.Current.FindFirst(ClaimTypes.NameIdentifier).Value;
             TokenCache userTokenCache = new MSALSessionCache(signedInUserID, this.HttpContext).GetMsalCacheInstance();
@@ -993,19 +994,19 @@ The subscription was created for mail messages, any time a new message is create
 
 After a short time, your web application will receive a notification from Microsoft. To check for the notification, **click** the **Notifications** navigation menu item. Refresh the page until the new notification is shown.
 
-![](Images/12.png)
+![New notification visible](Images/12.png)
 
-Your application could provide additional capabilities such as querying Microsoft Graph for additional data when a notification is received. This application allows multiple users to add subscriptions, but all users can see all notifications. Your application may require you to implement a per-user information store or filter data to only the notifications relevant to the current user. 
+Your application could provide additional capabilities such as querying Microsoft Graph for additional data when a notification is received. This application allows multiple users to add subscriptions, but all users can see all notifications. Your application may require you to implement a per-user information store or filter data to only the notifications relevant to the current user.
 
 ## 3. Adding custom data to Microsoft Graph resources
 
 This lab will walk you through working with custom data for resources using Microsoft Graph.
 
-### Pre-requisistes
+### Pre-requisites for Microsoft Graph resources application
 
 This lab requires an Office 365 administrative user.
 
-### Register the application
+### Register the Graph Resources application
 
 Visit the [Application Registration Portal](https://apps.dev.microsoft.com) and register a new application.  Make sure you are using a Office 365 Work and School account. Add a **Native** application platform. Add **delegated** permissions for **Directory.AccessAsUser.All** and **Group.ReadWrite.All**. Click **Save**.
 
@@ -1056,7 +1057,7 @@ namespace CustomData
 }
 ````
 
-The first demonstration will use open extensions with Microsoft Graph. 
+The first demonstration will use open extensions with Microsoft Graph.
 
 **Add** a new class named `OpenExtensionsDemo.cs`.  **Replace** the contents with the following:
 
@@ -1337,11 +1338,11 @@ namespace CustomData
 }
 ````
 
-### Run the application
+### Run the Microsoft Graph resources application
 
 Run the application.
 
-You are prompted to log in and grant consent to read and write the current user's profile. After granting consent, the application will continue. 
+You are prompted to log in and grant consent to read and write the current user's profile. After granting consent, the application will continue.
 
 The application is making REST calls to the Microsoft Graph to demonstrate the capabilities of using open extensions. The console output will show green highlighted text for successful calls, and red highlighted text if calls do not succeed.
 
@@ -1353,22 +1354,22 @@ The application is now making REST calls to the Microsoft Graph to demonstrate t
 
 ![Output from schema extension](Images/15.png)
 
-> Note that there is a `Thread.Sleep` call between each operation. This is required to avoid a race condition with resources as they are being created. 
+> Note that there is a `Thread.Sleep` call between each operation. This is required to avoid a race condition with resources as they are being created.
 
 ## 4. Developing insights with Microsoft Graph
 
 This lab will show how to use the Insights resource with Microsoft Graph.
 
-### Register the application
+### Register the insights application
 
 Visit the [Application Registration Portal](https://apps.dev.microsoft.com). **Register** a new Converged application, and copy the generated application ID for later use as the Client ID.  **Configure** the application:
 
 - Add a new secret by clicking the **Generate new password** button and copy the secret to use later as the Client Secret.
 - Click the **Add Platform** button. A popup is presented, choose **Web**.
-- Add a Redirect URL to use while debugging locally (the default setting for the Visual Studio project is `https://localhost:44326/`, if you use something else you need to change this value for your app registration). 
+- Add a Redirect URL to use while debugging locally (the default setting for the Visual Studio project is `https://localhost:44326/`, if you use something else you need to change this value for your app registration).
 - Click **Save** to save all changes.
 
-### Clone the starting application
+### Clone the insights starting application
 
 The application will use OpenId Connect with the v2.0 endpoint as a starting point. To start, you will clone the project from GitHub. From your shell or command line:
 
@@ -1376,7 +1377,7 @@ The application will use OpenId Connect with the v2.0 endpoint as a starting poi
 git clone https://github.com/Azure-Samples/active-directory-dotnet-webapp-openidconnect-v2.git
 ````
 
-**Open** the project with Visual Studio 2017. 
+**Open** the project with Visual Studio 2017.
 
 **Edit** the `web.config` file with your app's coordinates.
 
@@ -1956,7 +1957,7 @@ Each controller method returns a different model to use with its view. **Right-c
 </p>
 ```
 
-Each of these views uses two partial views, `_ResourceReference` and `_ResourceVisualization`. Partial views make it easy to encapsulate code that is common across multiple views. 
+Each of these views uses two partial views, `_ResourceReference` and `_ResourceVisualization`. Partial views make it easy to encapsulate code that is common across multiple views.
 
 **Right-click** the `Views / Shared` folder and choose **Add / View**. Name the new view `_ResourceReference`, change the template to **Details**, and change the model class to **ResourceReference**. Check the **Create as partial view** checkbox and click **Add**.
 
@@ -1972,7 +1973,7 @@ Finally, update the top-level navigation for the web site. **Edit** the `Views /
 <li>@Html.ActionLink("Insights", "Index", "Insights")</li>
 ```
 
-### Run the application
+### Run the insights application
 
 Run the application, then click on the **Sign in with Microsoft** link. You are prompted to sign in and to grant the application the requested permissions. After consenting, the page is displayed. Click the **Insights** link at the top of the page, then choose the **View Trending** link. The information is displayed.
 
@@ -1986,17 +1987,17 @@ Notice that the image for the previewImage is not displaying. This is because yo
 
 This lab will show how to use the batch resource with Microsoft Graph.
 
-### Pre-requisistes
+### Pre-requisites for insights application
 
 This lab requires an Office 365 user.
 
-### Register the application
+### Register the batch requests application
 
 Visit the [Application Registration Portal](https://apps.dev.microsoft.com) and register a new application. Add a **Native** application platform. Add **delegated** permissions for **Mail.Read**, **Calendars.Read**, **Contacts.Read**. Click **Save**.
 
 ![Permissions granted in application](Images/19.png)
 
-### Create the application
+### Create the insights application
 
 In Visual Studio 2017, **create** a new project using the **Console App (.NET Framework)** project template. **Right-click** the project node and choose **Manage NuGet packages**. **Click** the Browse tab, ensure the **Include pre-release** checkbox is checked, and search for **Microsoft.Identity.Client**. Click **Install**. **Click** the Browse tab and search for **Newtonsoft.Json**. Click **Install**.
 
@@ -2147,11 +2148,11 @@ namespace CustomData
 }
 ```
 
-### Run the application
+### Run the batch requests application
 
 Run the application.
 
-You are prompted to log in and grant consent to read and write the current user's profile. After granting consent, the application will continue. 
+You are prompted to log in and grant consent to read and write the current user's profile. After granting consent, the application will continue.
 
 The application is making a REST calls to the Microsoft Graph that submits 3 requests in one call to retrieve the top Mail item, Calendar item, and Contact item from your account.
 

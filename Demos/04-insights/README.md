@@ -8,7 +8,7 @@ This lab will show how to use the Insights resource with Microsoft Graph.
 
 1. Add a new app secret by selecting the **Generate new password** button and copying the secret to use later as the Client Secret.
 
-1. Select the **Add Platform** button. 
+1. Select the **Add Platform** button.
 
 1. In the dialog box, choose **Web**.
 
@@ -42,8 +42,6 @@ This lab will show how to use the Insights resource with Microsoft Graph.
     using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
-
-
 
     public class ResourceVisualization
     {
@@ -391,8 +389,6 @@ This lab will show how to use the Insights resource with Microsoft Graph.
                 else { }
                 return View(ret);
             }
-
-
         }
     }
     ```
@@ -559,8 +555,6 @@ This lab will show how to use the Insights resource with Microsoft Graph.
     <p>
         @Html.ActionLink("Back to List", "Index")
     </p>
-
-
     ```
 
 1. Replace the contents of **Used.cshtml** with the following:
@@ -609,8 +603,6 @@ This lab will show how to use the Insights resource with Microsoft Graph.
     <p>
         @Html.ActionLink("Back to List", "Index")
     </p>
-
-
     ```
 
 1. Each of these views uses two partial views, `_ResourceReference` and `_ResourceVisualization`. Partial views make it easy to encapsulate code that is common across multiple views. Right-click the **Views / Shared** folder and choose **Add > View**.
