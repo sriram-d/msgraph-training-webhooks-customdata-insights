@@ -24,6 +24,7 @@ Visit the [Application Registration Portal](https://apps.dev.microsoft.com). **R
 
 - **Generate** a new application password secret. Copy it for later use.
 - Add a **Native** application platform. Copy the generated URL for later use.
+- Add a **Web** application platform. Set the `Redirect URLs` to <http://localhost>
 - Add an **application** permission for the `User.ReadWrite.All` scope.
 - Make sure to **Save** all changes
 
@@ -63,6 +64,8 @@ Click the **Browse** tab in the NuGet Package Manager window. Ensure the **Inclu
 
 - `Microsoft.Graph`
 - `Microsoft.Identity.Client`
+
+>Note: Please select version 1.1.4-preview0002 of the Microsoft.Identity.Client.
 
 **Right-click** the References node in the project and choose **Add Reference**. **Add** a reference for `System.Configuration`.
 
@@ -570,7 +573,6 @@ namespace WebApp.Controllers
                 return new HttpStatusCodeResult(202);
             }
         }
-
     }
 }
 ````
@@ -637,13 +639,14 @@ namespace WebApp.Controllers
             // try to get token silently
             string signedInUserID = ClaimsPrincipal.Current.FindFirst(ClaimTypes.NameIdentifier).Value;
             TokenCache userTokenCache = new MSALSessionCache(signedInUserID, this.HttpContext).GetMsalCacheInstance();
-            ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri, new ClientCredential(appKey), userTokenCache, null);
-            if (cca.Users.Count() > 0)
+            ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri,new ClientCredential(appKey), userTokenCache, null);
+            var accounts = await cca.GetAccountsAsync();
+            if (accounts.Any())
             {
                 string[] scopes = { "Mail.Read" };
                 try
                 {
-                    AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, cca.Users.First());
+                    AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, accounts.First());
 
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
                     HttpResponseMessage response = await client.SendAsync(request);
@@ -679,15 +682,13 @@ namespace WebApp.Controllers
                     }
                     catch (Exception ee)
                     {
-
+                        Response.Write(ee.Message);
                     }
                 }
             }
             else { }
             return View("Subscription", null);
         }
-
-
 
         // Delete the current webhooks subscription and sign out the user.
         [Authorize]
@@ -705,13 +706,14 @@ namespace WebApp.Controllers
             // try to get token silently
             string signedInUserID = ClaimsPrincipal.Current.FindFirst(ClaimTypes.NameIdentifier).Value;
             TokenCache userTokenCache = new MSALSessionCache(signedInUserID, this.HttpContext).GetMsalCacheInstance();
-            ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri, new ClientCredential(appKey), userTokenCache, null);
-            if (cca.Users.Count() > 0)
+            ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri,new ClientCredential(appKey), userTokenCache, null);
+            var accounts = await cca.GetAccountsAsync();
+            if (accounts.Any())
             {
                 string[] scopes = { "Mail.Read" };
                 try
                 {
-                    AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, cca.Users.First());
+                    AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, accounts.First());
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
 
                     // Send the `DELETE subscriptions/id` request.
@@ -731,15 +733,13 @@ namespace WebApp.Controllers
                     }
                     catch (Exception ee)
                     {
-
+                        Response.Write(ee.Message);
                     }
                 }
             }
             else { }
             return RedirectToAction("SignOut", "Account");
         }
-
-
     }
 }
 ````
@@ -1614,13 +1614,14 @@ namespace WebApp.Controllers
             // try to get token silently
             string signedInUserID = ClaimsPrincipal.Current.FindFirst(ClaimTypes.NameIdentifier).Value;
             TokenCache userTokenCache = new MSALSessionCache(signedInUserID, this.HttpContext).GetMsalCacheInstance();
-            ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri, new ClientCredential(appKey), userTokenCache, null);
-            if (cca.Users.Count() > 0)
+            ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri,new ClientCredential(appKey), userTokenCache, null);
+            var accounts = await cca.GetAccountsAsync();
+            if (accounts.Any())
             {
                 string[] scopes = { "Sites.Read.All" };
                 try
                 {
-                    AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, cca.Users.First());
+                    AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, accounts.First());
 
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
                     HttpResponseMessage response = await client.SendAsync(request);
@@ -1641,7 +1642,7 @@ namespace WebApp.Controllers
                     }
                     catch (Exception ee)
                     {
-
+                        Response.Write(ee.Message);
                     }
                 }
             }
@@ -1659,13 +1660,14 @@ namespace WebApp.Controllers
             // try to get token silently
             string signedInUserID = ClaimsPrincipal.Current.FindFirst(ClaimTypes.NameIdentifier).Value;
             TokenCache userTokenCache = new MSALSessionCache(signedInUserID, this.HttpContext).GetMsalCacheInstance();
-            ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri, new ClientCredential(appKey), userTokenCache, null);
-            if (cca.Users.Count() > 0)
+            ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri,new ClientCredential(appKey), userTokenCache, null);
+            var accounts = await cca.GetAccountsAsync();
+            if (accounts.Any())
             {
                 string[] scopes = { "Sites.Read.All" };
                 try
                 {
-                    AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, cca.Users.First());
+                    AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, accounts.First());
 
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
                     HttpResponseMessage response = await client.SendAsync(request);
@@ -1686,7 +1688,7 @@ namespace WebApp.Controllers
                     }
                     catch (Exception ee)
                     {
-
+                        Response.Write(ee.Message);
                     }
                 }
             }
@@ -1705,13 +1707,14 @@ namespace WebApp.Controllers
             // try to get token silently
             string signedInUserID = ClaimsPrincipal.Current.FindFirst(ClaimTypes.NameIdentifier).Value;
             TokenCache userTokenCache = new MSALSessionCache(signedInUserID, this.HttpContext).GetMsalCacheInstance();
-            ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri, new ClientCredential(appKey), userTokenCache, null);
-            if (cca.Users.Count() > 0)
+            ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri,new ClientCredential(appKey), userTokenCache, null);
+            var accounts = await cca.GetAccountsAsync();
+            if (accounts.Any())
             {
                 string[] scopes = { "Sites.Read.All" };
                 try
                 {
-                    AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, cca.Users.First());
+                    AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, accounts.First());
 
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
                     HttpResponseMessage response = await client.SendAsync(request);
@@ -1733,15 +1736,13 @@ namespace WebApp.Controllers
                     }
                     catch (Exception ee)
                     {
-
+                        Response.Write(ee.Message);
                     }
                 }
             }
             else { }
             return View(ret);
         }
-
-
     }
 }
 ```
@@ -1978,10 +1979,6 @@ Finally, update the top-level navigation for the web site. **Edit** the `Views /
 Run the application, then click on the **Sign in with Microsoft** link. You are prompted to sign in and to grant the application the requested permissions. After consenting, the page is displayed. Click the **Insights** link at the top of the page, then choose the **View Trending** link. The information is displayed.
 
 ![Output of resource visualization](Images/17.png)
-
-Notice that the image for the previewImage is not displaying. This is because you must first log into your SharePoint site to see data. Open a new tab in the browser and navigate to your SharePoint site. Now, go back to the page and refresh, you will see the images appear.
-
-![Output of trending insights](Images/18.png)
 
 ## 5. Creating batch requests with Microsoft Graph
 

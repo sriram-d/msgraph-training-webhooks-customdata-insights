@@ -1,8 +1,5 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 
 namespace WebApp.Models
 {
@@ -12,7 +9,7 @@ namespace WebApp.Models
         [JsonProperty(PropertyName = "changeType")]
         public string ChangeType { get; set; }
 
-        // The string that Microsoft Graph should send with each notification. Maximum length is 255 characters. 
+        // The string that Microsoft Graph should send with each notification. Maximum length is 255 characters.
         // To verify that the notification is from Microsoft Graph, compare the value received with the notification to the value you sent with the subscription request.
         [JsonProperty(PropertyName = "clientState")]
         public string ClientState { get; set; }

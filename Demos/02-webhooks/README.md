@@ -357,7 +357,6 @@ The application uses several new model classes for (de)serialization and for Raz
                     return new HttpStatusCodeResult(202);
                 }
             }
-
         }
     }
     ```
@@ -424,13 +423,14 @@ The application uses several new model classes for (de)serialization and for Raz
                 // try to get token silently
                 string signedInUserID = ClaimsPrincipal.Current.FindFirst(ClaimTypes.NameIdentifier).Value;
                 TokenCache userTokenCache = new MSALSessionCache(signedInUserID, this.HttpContext).GetMsalCacheInstance();
-                ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri, new ClientCredential(appKey), userTokenCache, null);
-                if (cca.Users.Count() > 0)
+                ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri,new ClientCredential(appKey), userTokenCache, null);
+                var accounts = await cca.GetAccountsAsync();
+                if (accounts.Any())
                 {
                     string[] scopes = { "Mail.Read" };
                     try
                     {
-                        AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, cca.Users.First());
+                        AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, accounts.First());
 
                         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
                         HttpResponseMessage response = await client.SendAsync(request);
@@ -466,7 +466,7 @@ The application uses several new model classes for (de)serialization and for Raz
                         }
                         catch (Exception ee)
                         {
-
+                            Response.Write(ee.Message);
                         }
                     }
                 }
@@ -490,13 +490,14 @@ The application uses several new model classes for (de)serialization and for Raz
                 // try to get token silently
                 string signedInUserID = ClaimsPrincipal.Current.FindFirst(ClaimTypes.NameIdentifier).Value;
                 TokenCache userTokenCache = new MSALSessionCache(signedInUserID, this.HttpContext).GetMsalCacheInstance();
-                ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri, new ClientCredential(appKey), userTokenCache, null);
-                if (cca.Users.Count() > 0)
+                ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri,new ClientCredential(appKey), userTokenCache, null);
+                var accounts = await cca.GetAccountsAsync();
+                if (accounts.Any())
                 {
                     string[] scopes = { "Mail.Read" };
                     try
                     {
-                        AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, cca.Users.First());
+                        AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, accounts.First());
                         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
 
                         // Send the `DELETE subscriptions/id` request.
@@ -516,7 +517,7 @@ The application uses several new model classes for (de)serialization and for Raz
                         }
                         catch (Exception ee)
                         {
-
+                            Response.Write(ee.Message);
                         }
                     }
                 }

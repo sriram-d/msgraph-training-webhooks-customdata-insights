@@ -17,12 +17,12 @@
         <dd>
             @Html.DisplayFor(model => model.context)
         </dd>
-@foreach (var item in Model.value)
-{
+        @foreach (var item in Model.value)
+        {
 
-    <dt>
-        @Html.DisplayNameFor(modelItem => item.id)
-    </dt>
+            <dt>
+                @Html.DisplayNameFor(modelItem => item.id)
+            </dt>
             <dd>
                 @Html.DisplayFor(modelItem => item.id)
             </dd>
@@ -35,9 +35,9 @@
 
             @Html.Partial("_ResourceReference", item.resourceReference)
             @Html.Partial("_ResourceVisualization", item.resourceVisualization)
-}
+        }
     </dl>
 </div>
-<p>    
+<p>
     @Html.ActionLink("Back to List", "Index")
 </p>
