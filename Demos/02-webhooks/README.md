@@ -10,13 +10,13 @@ This demo uses **Visual Studio 2017**. It also requires an **Microsoft Office 36
 
 Webhooks in Microsoft Graph require a publicly accessible endpoint such as a Microsoft Azure Web App or another web server. This lab uses **Microsoft Azure**.
 
-1. In the Microsoft Azure portal, create a new web app by selecting **+ Create a resource > Web + Mobile > Web App**. 
+1. In the Microsoft Azure portal, create a new web app by selecting **+ Create a resource > Web + Mobile > Web App**.
 
-1. Provide a unique name, choose the subscription, and provide a resource group. 
+1. Provide a unique name, choose the subscription, and provide a resource group.
 
-1. Choose **Windows** as the OS type. 
+1. Choose **Windows** as the OS type.
 
-1. Edit the app service plan. Provide the name, location, and change the pricing tier to **Free**. 
+1. Edit the app service plan. Provide the name, location, and change the pricing tier to **Free**.
 
 1. Select **OK** and then select **Create**. Copy the URL for later use.
 
@@ -24,7 +24,7 @@ Webhooks in Microsoft Graph require a publicly accessible endpoint such as a Mic
 
 1. Visit the [Application Registration Portal](https://apps.dev.microsoft.com/). **Register** a new converged application, and copy the generated app ID for later use.
 
-1. Select the **Generate new password** button and copy the app secret to use later as the client Secret. 
+1. Select the **Generate new password** button and copy the app secret to use later as the client Secret.
 
 1. Select the **Add Platform** button. In the dialog box, choose **Web**.
 
@@ -314,7 +314,7 @@ The application uses several new model classes for (de)serialization and for Raz
                             {
 
                                 // Notifications are sent in a 'value' array. The array might contain multiple notifications for events that are
-                                // registered for the same notification endpoint, and that occur within a short timespan.
+                                // registered for the same notification endpoint, and that occur within a short time span.
                                 JArray value = JArray.Parse(jsonObject["value"].ToString());
                                 foreach (var notification in value)
                                 {
@@ -357,7 +357,6 @@ The application uses several new model classes for (de)serialization and for Raz
                     return new HttpStatusCodeResult(202);
                 }
             }
-
         }
     }
     ```
@@ -413,7 +412,7 @@ The application uses several new model classes for (de)serialization and for Raz
                     ChangeType = "created",
                     NotificationUrl = ConfigurationManager.AppSettings["ida:NotificationUrl"],
                     ClientState = Guid.NewGuid().ToString(),
-                    //ExpirationDateTime = DateTime.UtcNow + new TimeSpan(0, 0, 4230, 0) // current maximum timespan for messages
+                    //ExpirationDateTime = DateTime.UtcNow + new TimeSpan(0, 0, 4230, 0) // current maximum time span for messages
                     ExpirationDateTime = DateTime.UtcNow + new TimeSpan(0, 0, 15, 0) // shorter duration useful for testing
                 };
 
@@ -421,17 +420,17 @@ The application uses several new model classes for (de)serialization and for Raz
                     new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
                 request.Content = new StringContent(contentString, System.Text.Encoding.UTF8, "application/json");
 
-
                 // try to get token silently
                 string signedInUserID = ClaimsPrincipal.Current.FindFirst(ClaimTypes.NameIdentifier).Value;
                 TokenCache userTokenCache = new MSALSessionCache(signedInUserID, this.HttpContext).GetMsalCacheInstance();
-                ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri, new ClientCredential(appKey), userTokenCache, null);
-                if (cca.Users.Count() > 0)
+                ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri,new ClientCredential(appKey), userTokenCache, null);
+                var accounts = await cca.GetAccountsAsync();
+                if (accounts.Any())
                 {
                     string[] scopes = { "Mail.Read" };
                     try
                     {
-                        AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, cca.Users.First());
+                        AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, accounts.First());
 
                         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
                         HttpResponseMessage response = await client.SendAsync(request);
@@ -467,15 +466,13 @@ The application uses several new model classes for (de)serialization and for Raz
                         }
                         catch (Exception ee)
                         {
-
+                            Response.Write(ee.Message);
                         }
                     }
                 }
                 else { }
                 return View("Subscription", null);
             }
-
-
 
             // Delete the current webhooks subscription and sign out the user.
             [Authorize]
@@ -493,13 +490,14 @@ The application uses several new model classes for (de)serialization and for Raz
                 // try to get token silently
                 string signedInUserID = ClaimsPrincipal.Current.FindFirst(ClaimTypes.NameIdentifier).Value;
                 TokenCache userTokenCache = new MSALSessionCache(signedInUserID, this.HttpContext).GetMsalCacheInstance();
-                ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri, new ClientCredential(appKey), userTokenCache, null);
-                if (cca.Users.Count() > 0)
+                ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri,new ClientCredential(appKey), userTokenCache, null);
+                var accounts = await cca.GetAccountsAsync();
+                if (accounts.Any())
                 {
                     string[] scopes = { "Mail.Read" };
                     try
                     {
-                        AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, cca.Users.First());
+                        AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, accounts.First());
                         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
 
                         // Send the `DELETE subscriptions/id` request.
@@ -519,15 +517,13 @@ The application uses several new model classes for (de)serialization and for Raz
                         }
                         catch (Exception ee)
                         {
-
+                            Response.Write(ee.Message);
                         }
                     }
                 }
                 else { }
                 return RedirectToAction("SignOut", "Account");
             }
-
-
         }
     }
     ```
@@ -590,7 +586,7 @@ The application uses several new model classes for (de)serialization and for Raz
     </html>
     ```
 
-1. The **Notification** controller was created but a view was not created for it yet. Right-click the **Views/Notification** folder, choose **Add > View**.  Name the view **Index**, leaving all other values as defaults. 
+1. The **Notification** controller was created but a view was not created for it yet. Right-click the **Views/Notification** folder, choose **Add > View**.  Name the view **Index**, leaving all other values as defaults.
 
 1. Replace the contents of **Index.cshtml** with the following:
 
@@ -600,7 +596,6 @@ The application uses several new model classes for (de)serialization and for Raz
     @{
         ViewBag.Title = "Notification";
     }
-
 
     <h2>Notifications</h2>
 
@@ -625,7 +620,6 @@ The application uses several new model classes for (de)serialization and for Raz
                 @Html.DisplayNameFor(model => model.SubscriptionId)
             </th>
         </tr>
-
 
         @foreach (var item in Model) {
         <tr>

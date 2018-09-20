@@ -28,7 +28,7 @@ This demo requires an Office 365 user.
 
 1. Select the Browse tab and search for **Newtonsoft.Json**. Select **Install**.
 
-1. Right-click the **References** node in the project and choose **Add Reference**. 
+1. Right-click the **References** node in the project and choose **Add Reference**.
 
 1. Add a reference for **System.Configuration**.
 
