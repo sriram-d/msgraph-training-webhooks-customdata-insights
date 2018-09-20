@@ -2,8 +2,6 @@
 using System;
 using System.Collections.Generic;
 
-
-
 public class ResourceVisualization
 {
 
@@ -44,10 +42,6 @@ public class ResourceReference
     [JsonProperty("type")]
     public string type { get; set; }
 }
-
-
-
-
 
 public class TrendingInsights
 {

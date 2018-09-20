@@ -27,7 +27,7 @@ namespace WebApp.Controllers
             return View();
         }
 
-        [Authorize]        
+        [Authorize]
         public async Task<ActionResult> CreateSubscription()
         {
             string subscriptionsEndpoint = "https://graph.microsoft.com/v1.0/subscriptions/";
@@ -44,25 +44,25 @@ namespace WebApp.Controllers
                 ChangeType = "created",
                 NotificationUrl = ConfigurationManager.AppSettings["ida:NotificationUrl"],
                 ClientState = Guid.NewGuid().ToString(),
-                //ExpirationDateTime = DateTime.UtcNow + new TimeSpan(0, 0, 4230, 0) // current maximum timespan for messages
+                //ExpirationDateTime = DateTime.UtcNow + new TimeSpan(0, 0, 4230, 0) // current maximum time span for messages
                 ExpirationDateTime = DateTime.UtcNow + new TimeSpan(0, 0, 15, 0) // shorter duration useful for testing
             };
-            
+
             string contentString = JsonConvert.SerializeObject(subscription,
                 new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
             request.Content = new StringContent(contentString, System.Text.Encoding.UTF8, "application/json");
-            
 
             // try to get token silently
             string signedInUserID = ClaimsPrincipal.Current.FindFirst(ClaimTypes.NameIdentifier).Value;
-            TokenCache userTokenCache = new MSALSessionCache(signedInUserID, this.HttpContext).GetMsalCacheInstance();
-            ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri, new ClientCredential(appKey), userTokenCache, null);
-            if (cca.Users.Count() > 0)
+            TokenCache userTokenCache = new MSALSessionCache(signedInUserID, this.HttpContext).GetMsalCacheInstance();            
+            ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri,new ClientCredential(appKey), userTokenCache, null);
+            var accounts = await cca.GetAccountsAsync();
+            if (accounts.Any())
             {
                 string[] scopes = { "Mail.Read" };
                 try
                 {
-                    AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, cca.Users.First());
+                    AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, accounts.First());
 
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
                     HttpResponseMessage response = await client.SendAsync(request);
@@ -76,7 +76,7 @@ namespace WebApp.Controllers
                             Subscription = JsonConvert.DeserializeObject<Subscription>(stringResult)
                         };
 
-                        // This sample temporarily stores the current subscription ID, client state, user object ID, and tenant ID. 
+                        // This sample temporarily stores the current subscription ID, client state, user object ID, and tenant ID.
                         // This info is required so the NotificationController, which is not authenticated, can retrieve an access token from the cache and validate the subscription.
                         // Production apps typically use some method of persistent storage.
                         SubscriptionStore.SaveSubscriptionInfo(viewModel.Subscription.Id,
@@ -98,7 +98,7 @@ namespace WebApp.Controllers
                     }
                     catch (Exception ee)
                     {
-
+                        Response.Write(ee.Message);
                     }
                 }
             }
@@ -117,20 +117,21 @@ namespace WebApp.Controllers
 
             // Build the request.
             HttpClient client = new HttpClient();
-            
+
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Delete, subscriptionsEndpoint + subscriptionId);
-            
+
             // try to get token silently
             string signedInUserID = ClaimsPrincipal.Current.FindFirst(ClaimTypes.NameIdentifier).Value;
-            TokenCache userTokenCache = new MSALSessionCache(signedInUserID, this.HttpContext).GetMsalCacheInstance();
-            ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri, new ClientCredential(appKey), userTokenCache, null);
-            if (cca.Users.Count() > 0)
+            TokenCache userTokenCache = new MSALSessionCache(signedInUserID, this.HttpContext).GetMsalCacheInstance();            
+            ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri,new ClientCredential(appKey), userTokenCache, null);
+            var accounts = await cca.GetAccountsAsync();
+            if (accounts.Any())
             {
                 string[] scopes = { "Mail.Read" };
                 try
                 {
-                    AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, cca.Users.First());
+                    AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, accounts.First());
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
 
                     // Send the `DELETE subscriptions/id` request.
@@ -150,14 +151,12 @@ namespace WebApp.Controllers
                     }
                     catch (Exception ee)
                     {
-
+                        Response.Write(ee.Message);
                     }
                 }
             }
             else { }
             return RedirectToAction("SignOut", "Account");
         }
-
-
     }
 }

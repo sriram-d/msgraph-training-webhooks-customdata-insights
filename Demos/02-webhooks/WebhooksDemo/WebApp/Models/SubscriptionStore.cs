@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Web;
 
 namespace WebApp.Models
@@ -20,7 +18,7 @@ namespace WebApp.Models
             TenantId = parameters.Item3;
         }
 
-        // This sample temporarily stores the current subscription ID, client state, user object ID, and tenant ID. 
+        // This sample temporarily stores the current subscription ID, client state, user object ID, and tenant ID.
         // This info is required so the NotificationController can retrieve an access token from the cache and validate the subscription.
         // Production apps typically use some method of persistent storage.
         public static void SaveSubscriptionInfo(string subscriptionId, string clientState, string userId, string tenantId)

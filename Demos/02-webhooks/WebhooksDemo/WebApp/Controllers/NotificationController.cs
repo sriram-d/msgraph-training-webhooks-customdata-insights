@@ -15,7 +15,6 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using WebApp.Models;
-using WebApp.Models.GraphWebhooks.Models;
 using WebApp_OpenIDConnect_DotNet.Models;
 
 namespace WebApp.Controllers
@@ -36,12 +35,13 @@ namespace WebApp.Controllers
             //Store the notifications in session state. A production
             //application would likely queue for additional processing.
             //Store the notifications in application state. A production
-            //application would likely queue for additional processing.                                                                             
+            //application would likely queue for additional processing.
+
             var notificationArray = (ConcurrentBag<Notification>)HttpContext.Application["notifications"];
             if (notificationArray == null)
             {
                 notificationArray = new ConcurrentBag<Notification>();
-            }            
+            }
             HttpContext.Application["notifications"] = notificationArray;
             return View(notificationArray);
         }
@@ -63,7 +63,7 @@ namespace WebApp.Controllers
             else
             {
                 try
-                {                    
+                {
                     using (var inputStream = new System.IO.StreamReader(Request.InputStream))
                     {
                         JObject jsonObject = JObject.Parse(inputStream.ReadToEnd());
@@ -71,13 +71,13 @@ namespace WebApp.Controllers
                         {
 
                             // Notifications are sent in a 'value' array. The array might contain multiple notifications for events that are
-                            // registered for the same notification endpoint, and that occur within a short timespan.
+                            // registered for the same notification endpoint, and that occur within a short time span.
                             JArray value = JArray.Parse(jsonObject["value"].ToString());
                             foreach (var notification in value)
                             {
                                 Notification current = JsonConvert.DeserializeObject<Notification>(notification.ToString());
 
-                                // Check client state to verify the message is from Microsoft Graph. 
+                                // Check client state to verify the message is from Microsoft Graph.
                                 SubscriptionStore subscription = SubscriptionStore.GetSubscriptionInfo(current.SubscriptionId);
 
                                 // This sample only works with subscriptions that are still cached.
@@ -86,14 +86,18 @@ namespace WebApp.Controllers
                                     if (current.ClientState == subscription.ClientState)
                                     {
                                         //Store the notifications in application state. A production
-                                        //application would likely queue for additional processing.                                                                             
-                                        var notificationArray = (ConcurrentBag<Notification>)HttpContext.Application["notifications"];                                        
+                                        //application would likely queue for additional processing.
+
+                                        var notificationArray = (ConcurrentBag<Notification>)HttpContext.Application["notifications"];
+
                                         if(notificationArray == null)
                                         {
-                                            notificationArray = new ConcurrentBag<Notification>();                                            
+                                            notificationArray = new ConcurrentBag<Notification>();
+
                                         }
-                                        notificationArray.Add(current);                                        
-                                        HttpContext.Application["notifications"] = notificationArray;                                        
+                                        notificationArray.Add(current);
+
+                                        HttpContext.Application["notifications"] = notificationArray;
                                     }
                                 }
                             }

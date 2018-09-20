@@ -8,7 +8,7 @@ This lab will show how to use the Insights resource with Microsoft Graph.
 
 1. Add a new app secret by selecting the **Generate new password** button and copying the secret to use later as the Client Secret.
 
-1. Select the **Add Platform** button. 
+1. Select the **Add Platform** button.
 
 1. In the dialog box, choose **Web**.
 
@@ -42,8 +42,6 @@ This lab will show how to use the Insights resource with Microsoft Graph.
     using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
-
-
 
     public class ResourceVisualization
     {
@@ -251,7 +249,6 @@ This lab will show how to use the Insights resource with Microsoft Graph.
             public async Task<ActionResult> Index()
             {
                 return View();
-
             }
 
             [Authorize]
@@ -265,13 +262,14 @@ This lab will show how to use the Insights resource with Microsoft Graph.
                 // try to get token silently
                 string signedInUserID = ClaimsPrincipal.Current.FindFirst(ClaimTypes.NameIdentifier).Value;
                 TokenCache userTokenCache = new MSALSessionCache(signedInUserID, this.HttpContext).GetMsalCacheInstance();
-                ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri, new ClientCredential(appKey), userTokenCache, null);
-                if (cca.Users.Count() > 0)
+                ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri,new ClientCredential(appKey), userTokenCache, null);
+                var accounts = await cca.GetAccountsAsync();
+                if (accounts.Any())
                 {
                     string[] scopes = { "Sites.Read.All" };
                     try
                     {
-                        AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, cca.Users.First());
+                        AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, accounts.First());
 
                         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
                         HttpResponseMessage response = await client.SendAsync(request);
@@ -292,7 +290,7 @@ This lab will show how to use the Insights resource with Microsoft Graph.
                         }
                         catch (Exception ee)
                         {
-
+                            Response.Write(ee.Message);
                         }
                     }
                 }
@@ -310,13 +308,14 @@ This lab will show how to use the Insights resource with Microsoft Graph.
                 // try to get token silently
                 string signedInUserID = ClaimsPrincipal.Current.FindFirst(ClaimTypes.NameIdentifier).Value;
                 TokenCache userTokenCache = new MSALSessionCache(signedInUserID, this.HttpContext).GetMsalCacheInstance();
-                ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri, new ClientCredential(appKey), userTokenCache, null);
-                if (cca.Users.Count() > 0)
+                ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri,new ClientCredential(appKey), userTokenCache, null);
+                var accounts = await cca.GetAccountsAsync();
+                if (accounts.Any())
                 {
                     string[] scopes = { "Sites.Read.All" };
                     try
                     {
-                        AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, cca.Users.First());
+                        AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, accounts.First());
 
                         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
                         HttpResponseMessage response = await client.SendAsync(request);
@@ -337,7 +336,7 @@ This lab will show how to use the Insights resource with Microsoft Graph.
                         }
                         catch (Exception ee)
                         {
-
+                            Response.Write(ee.Message);
                         }
                     }
                 }
@@ -356,13 +355,14 @@ This lab will show how to use the Insights resource with Microsoft Graph.
                 // try to get token silently
                 string signedInUserID = ClaimsPrincipal.Current.FindFirst(ClaimTypes.NameIdentifier).Value;
                 TokenCache userTokenCache = new MSALSessionCache(signedInUserID, this.HttpContext).GetMsalCacheInstance();
-                ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri, new ClientCredential(appKey), userTokenCache, null);
-                if (cca.Users.Count() > 0)
+                ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri,new ClientCredential(appKey), userTokenCache, null);
+                var accounts = await cca.GetAccountsAsync();
+                if (accounts.Any())
                 {
                     string[] scopes = { "Sites.Read.All" };
                     try
                     {
-                        AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, cca.Users.First());
+                        AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, accounts.First());
 
                         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
                         HttpResponseMessage response = await client.SendAsync(request);
@@ -384,15 +384,13 @@ This lab will show how to use the Insights resource with Microsoft Graph.
                         }
                         catch (Exception ee)
                         {
-
+                            Response.Write(ee.Message);
                         }
                     }
                 }
                 else { }
                 return View(ret);
             }
-
-
         }
     }
     ```
@@ -559,8 +557,6 @@ This lab will show how to use the Insights resource with Microsoft Graph.
     <p>
         @Html.ActionLink("Back to List", "Index")
     </p>
-
-
     ```
 
 1. Replace the contents of **Used.cshtml** with the following:
@@ -609,8 +605,6 @@ This lab will show how to use the Insights resource with Microsoft Graph.
     <p>
         @Html.ActionLink("Back to List", "Index")
     </p>
-
-
     ```
 
 1. Each of these views uses two partial views, `_ResourceReference` and `_ResourceVisualization`. Partial views make it easy to encapsulate code that is common across multiple views. Right-click the **Views / Shared** folder and choose **Add > View**.

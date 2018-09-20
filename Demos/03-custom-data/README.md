@@ -144,13 +144,11 @@ This demo requires an Office 365 administrative user.
 
                 response.WriteCodeAndReasonToConsole();
             }
-
-
         }
     }
     ```
 
-1. The second demonstration will use schema extensions with Microsoft Graph. Add a new class named **SchemaExtensionsDemo.cs**. 
+1. The second demonstration will use schema extensions with Microsoft Graph. Add a new class named **SchemaExtensionsDemo.cs**.
 
 1. Replace its contents with the following:
 
@@ -326,7 +324,6 @@ This demo requires an Office 365 administrative user.
         {
             public static void WriteCodeAndReasonToConsole(this HttpResponseMessage response)
             {
-
 
                 var defaultBGColor = Console.BackgroundColor;
                 var defaultFGColor = Console.ForegroundColor;

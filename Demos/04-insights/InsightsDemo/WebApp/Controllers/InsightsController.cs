@@ -20,11 +20,10 @@ namespace WebApp.Controllers
         private static string appKey = ConfigurationManager.AppSettings["ida:ClientSecret"];
         private static string redirectUri = ConfigurationManager.AppSettings["ida:RedirectUri"];
 
-        // GET: Insights        
+        // GET: Insights
         public async Task<ActionResult> Index()
         {
             return View();
-            
         }
 
         [Authorize]
@@ -37,14 +36,15 @@ namespace WebApp.Controllers
 
             // try to get token silently
             string signedInUserID = ClaimsPrincipal.Current.FindFirst(ClaimTypes.NameIdentifier).Value;
-            TokenCache userTokenCache = new MSALSessionCache(signedInUserID, this.HttpContext).GetMsalCacheInstance();
-            ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri, new ClientCredential(appKey), userTokenCache, null);
-            if (cca.Users.Count() > 0)
+            TokenCache userTokenCache = new MSALSessionCache(signedInUserID, this.HttpContext).GetMsalCacheInstance();            
+            ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri,new ClientCredential(appKey), userTokenCache, null);
+            var accounts = await cca.GetAccountsAsync();
+            if (accounts.Any())
             {
                 string[] scopes = { "Sites.Read.All" };
                 try
                 {
-                    AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, cca.Users.First());
+                    AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, accounts.First());
 
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
                     HttpResponseMessage response = await client.SendAsync(request);
@@ -65,7 +65,7 @@ namespace WebApp.Controllers
                     }
                     catch (Exception ee)
                     {
-
+                        Response.Write(ee.Message);
                     }
                 }
             }
@@ -82,14 +82,15 @@ namespace WebApp.Controllers
 
             // try to get token silently
             string signedInUserID = ClaimsPrincipal.Current.FindFirst(ClaimTypes.NameIdentifier).Value;
-            TokenCache userTokenCache = new MSALSessionCache(signedInUserID, this.HttpContext).GetMsalCacheInstance();
-            ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri, new ClientCredential(appKey), userTokenCache, null);
-            if (cca.Users.Count() > 0)
+            TokenCache userTokenCache = new MSALSessionCache(signedInUserID, this.HttpContext).GetMsalCacheInstance();            
+            ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri,new ClientCredential(appKey), userTokenCache, null);
+            var accounts = await cca.GetAccountsAsync();
+            if (accounts.Any())
             {
                 string[] scopes = { "Sites.Read.All" };
                 try
                 {
-                    AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, cca.Users.First());
+                    AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, accounts.First());
 
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
                     HttpResponseMessage response = await client.SendAsync(request);
@@ -110,7 +111,7 @@ namespace WebApp.Controllers
                     }
                     catch (Exception ee)
                     {
-
+                        Response.Write(ee.Message);
                     }
                 }
             }
@@ -128,14 +129,15 @@ namespace WebApp.Controllers
 
             // try to get token silently
             string signedInUserID = ClaimsPrincipal.Current.FindFirst(ClaimTypes.NameIdentifier).Value;
-            TokenCache userTokenCache = new MSALSessionCache(signedInUserID, this.HttpContext).GetMsalCacheInstance();
-            ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri, new ClientCredential(appKey), userTokenCache, null);
-            if (cca.Users.Count() > 0)
+            TokenCache userTokenCache = new MSALSessionCache(signedInUserID, this.HttpContext).GetMsalCacheInstance();            
+            ConfidentialClientApplication cca = new ConfidentialClientApplication(clientId, redirectUri,new ClientCredential(appKey), userTokenCache, null);
+            var accounts = await cca.GetAccountsAsync();
+            if (accounts.Any())
             {
                 string[] scopes = { "Sites.Read.All" };
                 try
                 {
-                    AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, cca.Users.First());
+                    AuthenticationResult result = await cca.AcquireTokenSilentAsync(scopes, accounts.First());
 
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
                     HttpResponseMessage response = await client.SendAsync(request);
@@ -157,14 +159,12 @@ namespace WebApp.Controllers
                     }
                     catch (Exception ee)
                     {
-
+                        Response.Write(ee.Message);
                     }
                 }
             }
             else { }
             return View(ret);
         }
-
-
     }
 }
